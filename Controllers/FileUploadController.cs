@@ -6,10 +6,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using DocumentAnalyzer.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
-using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using Newtonsoft.Json.Linq;
 
 namespace DocumentAnalyzer.Controllers
@@ -21,10 +21,11 @@ namespace DocumentAnalyzer.Controllers
 
         static string endpoint = @"";
         static string uriBase = endpoint + "vision/v1.0/ocr";
-       
+
+
 
         [HttpPost("FileUpload")]
-        public async Task<IActionResult> Index(List<IFormFile> files)
+        public IActionResult Index(List<IFormFile> files)
         {
             long size = files.Sum(f => f.Length);
             StringBuilder sb = new StringBuilder();
@@ -45,7 +46,7 @@ namespace DocumentAnalyzer.Controllers
 
 
                     List<string> foundText = new List<string>();
-                   JToken docData = MakeOCRRequest(filePath).Result;
+                    JToken docData = MakeOCRRequest(filePath).Result;
                     using (StringReader sr = new StringReader(docData.ToString()))
                     {
                         string line = "";
@@ -56,32 +57,31 @@ namespace DocumentAnalyzer.Controllers
                             {
                                 foundText.Add(lineTrimm.Split(":")[1].Trim().Replace("\"", ""));
                             }
-                            
                         }
                     }
-                    string LastName = foundText[foundText.FindIndex(f => f == "SURNAME") + 1];
-                    string FirstName = "";
+
+                    PersonDTO person = new PersonDTO();
+
+                    person.LastName = foundText[foundText.FindIndex(f => f == "SURNAME") + 1];
+                    person.FirstName = "";
 
                     int indexName = foundText.FindIndex(f => f == "NAMES") + 1;
                     string space = "";
                     while (foundText[indexName] != "SUGU")
                     {
-                        FirstName += space + foundText[indexName];
+                        person.FirstName += space + foundText[indexName];
                         indexName++;
-                        space = " "; 
+                        space = " ";
                     }
-                    
-                    string IdCodee = foundText[foundText.FindIndex(f => f == "CODE") + 3];
 
-                    var a = 1;
-                    
-                   
+                    person.IdCode = foundText[foundText.FindIndex(f => f == "CODE") + 3];
+                    ViewBag.Person = person;
                 }
             }
-            
+
             // process uploaded files
             // Don't rely on or trust the FileName property without validation.
-            return Ok(new { count = files.Count, size, filePaths });
+            return View("~/Views/Home/Index.cshtml");
         }
 
         public static ComputerVisionClient Authenticate(string endpoint, string key)
@@ -91,22 +91,7 @@ namespace DocumentAnalyzer.Controllers
                 { Endpoint = endpoint };
             return client;
         }
-
-
-
-
-
-
-        private void DoOCR(string imageFileName)
-        {
-           
-
-            // the OCR method endpoint
-           
-
-
-        }
-
+                      
         /// <summary>
         /// Gets the text visible in the specified image file by using
         /// the Computer Vision REST API.
@@ -165,7 +150,6 @@ namespace DocumentAnalyzer.Controllers
             {
                 System.IO.File.Delete(imageFilePath);
             }
-           
         }
 
         /// <summary>
