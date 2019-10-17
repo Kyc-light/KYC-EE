@@ -17,9 +17,9 @@ namespace DocumentAnalyzer.Controllers
     public class FileUploadController : Controller
     {
         // Add your Computer Vision subscription key and endpoint to your environment variables.
-        static string subscriptionKey = @"447a7969446a4d59bbefe01568575286";
+        static string subscriptionKey = @"";
 
-        static string endpoint = @"https://documentparser.cognitiveservices.azure.com/";
+        static string endpoint = @"";
         static string uriBase = endpoint + "vision/v1.0/ocr";
        
 
@@ -40,36 +40,9 @@ namespace DocumentAnalyzer.Controllers
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        //ComputerVisionClient client = Authenticate(endpoint, subscriptionKey);
-                        //BatchReadFileInStreamHeaders localFileTextHeaders = await client.BatchReadFileInStreamAsync(stream);
-                        //string operationLocation = localFileTextHeaders.OperationLocation;
-
-                        //int numberOfCharsInOperationId = 36;
-
-                        //string operationId = operationLocation.Substring(operationLocation.Length - numberOfCharsInOperationId);
-
-                        //ReadOperationResult results;
-
-                        //results = await client.GetReadOperationResultAsync(operationId);
-                        
-                        //var recognitionResults = results.RecognitionResults;
-                        //foreach (TextRecognitionResult result in recognitionResults)
-                        //{
-                        //    foreach (Line line in result.Lines)
-                        //    {
-                        //        sb.AppendLine(line.Text);
-                        //    }
-                        //}
-
-
-
                         formFile.CopyToAsync(stream).Wait();
-
                     }
 
-
-                    //BatchReadFileHeaders textHeaders = await client.BatchReadFileAsync(filePath);
-                    // After the request, get the operation location (operation ID)
 
                     List<string> foundText = new List<string>();
                    JToken docData = MakeOCRRequest(filePath).Result;
